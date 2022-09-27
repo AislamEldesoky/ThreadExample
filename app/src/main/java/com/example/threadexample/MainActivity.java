@@ -1,51 +1,47 @@
 package com.example.threadexample;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
+import android.os.Message;
+import android.os.SystemClock;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
+
+import static com.example.threadexample.ExampleHandler.TASK_A;
+import static com.example.threadexample.ExampleHandler.TASK_B;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.threadexample.ExampleLooperThread;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-    private Button buttonStartThread ;
-    private volatile boolean stopThread = false ;
+
+    private ExampleLooperThread looperThread = new ExampleLooperThread();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        buttonStartThread = findViewById(R.id.button_start_thread);
-    }
-    public void startThread(View v){
-        stopThread = false ;
-        ExampleRunnable exampleRunnable = new ExampleRunnable();
-        new Thread(exampleRunnable).start();
     }
 
-    public void stopThread(View v){
-        stopThread = true ;
+    public void startThread(View view) {
+        looperThread.start();
     }
 
-    class ExampleRunnable implements Runnable{
-        @Override
-        public void run() {
-            for(int i=0; i<1000; i++){
-                if(stopThread)
-                    return;
-                if(i==5){
-                  runOnUiThread(() -> buttonStartThread.setText("50%"));
-                }
-                Log.d(TAG, "startThread: " + i);
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+    public void stopThread(View view) {
+        looperThread.looper.quit();
+    }
+
+    public void taskA(View view) {
+        Message msg = Message.obtain();
+        msg.what = TASK_A;
+        looperThread.handler.sendMessage(msg);
+    }
+
+    public void taskB(View view) {
+        Message msg = Message.obtain();
+        msg.what = TASK_B;
+        looperThread.handler.sendMessage(msg);
     }
 }
-
